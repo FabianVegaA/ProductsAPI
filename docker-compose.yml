@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  database:
+    build: ./db
+    container_name: production-db
+    ports:
+      - "5432:5432"
+    env_file:
+      - example.env
+    volumes:
+      - ./db/postgres:/var/lib/postgresql/data
+volumes:
+  db:
+    driver: local
