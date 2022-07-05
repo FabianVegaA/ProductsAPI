@@ -13,6 +13,20 @@ packages:
     hackage: scotty-0.12
 - completed:
     pantry-tree:
+      sha256: 2167369861c279fc99b2703e8a7cd924e64904fe0700778660eb835a9e73b2dc
+      size: 4197
+    hackage: postgresql-simple-0.6.4@sha256:081bdffa02b7d164bdda32d2ab79d681818bb71f3ecd14d83d60bca0f1585be1,5272
+  original:
+    hackage: postgresql-simple-0.6.4
+- completed:
+    pantry-tree:
+      sha256: b1fd81329340a9c6eea4e78313d36c6a333a5de6032ec1536ff6c70a4300b46c
+      size: 7720
+    hackage: text-1.2.4.1@sha256:e12b468008b3c2bbc1f39bd2dcb75ba8f563c65aa5e54ee223b76463a845b6f1,7184
+  original:
+    hackage: text-1.2.4.1
+- completed:
+    pantry-tree:
       sha256: b6547599e564e528e357f236426fa8ed8bcc3e38b40b4c766a62fa22e0b5b930
       size: 38191
     hackage: aeson-2.1.0.0@sha256:18a5e5f6f4224d04565e97cec140affb1728c488bf07ef497430ef7d95cd05ff,5959
@@ -676,4 +690,25 @@ packages:
     hackage: old-locale-1.0.0.7@sha256:fa998be2c7e00cd26a6e9075bea790caaf3932caa3e9497ad69bc20380dd6911,1071
   original:
     hackage: old-locale-1.0.0.7@sha256:fa998be2c7e00cd26a6e9075bea790caaf3932caa3e9497ad69bc20380dd6911,1071
+- completed:
+    pantry-tree:
+      sha256: e999ae7690fc1e13bb471bc1ead6d7a5c245843d17862d3d27f7f0f752513257
+      size: 210
+    hackage: Only-0.1@sha256:f92f5da97e647451f1ee7f5bf44914fb75062d08ccd3f36b2000d649c63d13aa,1373
+  original:
+    hackage: Only-0.1@sha256:f92f5da97e647451f1ee7f5bf44914fb75062d08ccd3f36b2000d649c63d13aa,1373
+- completed:
+    pantry-tree:
+      sha256: cbfed55bf3b55fa213e9635423b69db89ff797e68b29bd8f9e62eef843c3524b
+      size: 1393
+    hackage: bytestring-builder-0.10.8.2.0@sha256:6b2b812cdac53f5a2c82376a416dde04adbb5ca3e1604c0d075368a0498f762b,3781
+  original:
+    hackage: bytestring-builder-0.10.8.2.0@sha256:6b2b812cdac53f5a2c82376a416dde04adbb5ca3e1604c0d075368a0498f762b,3781
+- completed:
+    pantry-tree:
+      sha256: 7bd567268aa7219e2ae3e66f9ec716c9433f0c593f8e0614ff97539befe61ed4
+      size: 629
+    hackage: postgresql-libpq-0.9.4.3@sha256:d64bee309b4f7fe5eb3b78c238c5144720cad903e31432fc868b58b98ba49fd8,2817
+  original:
+    hackage: postgresql-libpq-0.9.4.3@sha256:d64bee309b4f7fe5eb3b78c238c5144720cad903e31432fc868b58b98ba49fd8,2817
 snapshots: []

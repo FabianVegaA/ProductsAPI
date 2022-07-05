@@ -4,24 +4,26 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           productsAPI
-version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/productsAPI#readme>
-homepage:       https://github.com/githubuser/productsAPI#readme
-bug-reports:    https://github.com/githubuser/productsAPI/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2022 Author name here
-license:        BSD3
-license-file:   LICENSE
-build-type:     Simple
+name:               productsAPI
+version:            0.1.0.0
+synopsis:           A simple API REST example made with Haskell and Scotty.
+description:        Please see the README on GitHub at <https://github.com/FabianVegaA/productsAPI#readme>
+category:           Web
+homepage:           https://github.com/FabianVegaA/productsAPI#readme
+bug-reports:        https://github.com/FabianVegaA/productsAPI/issues
+author:             Fabián Vega
+maintainer:         example@example.com
+copyright:          2022 Fabián Vega
+license:            BSD3
+license-file:       LICENSE
+build-type:         Simple
 extra-source-files:
     README.md
     ChangeLog.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/productsAPI
+  location: https://github.com/FabianVegaA/productsAPI
 
 library
   exposed-modules:
@@ -31,8 +33,11 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      aeson ==2.1.0.0
+    , base >=4.7 && <5
+    , postgresql-simple ==0.6.4
     , scotty ==0.12
+    , text ==1.2.4.1
   default-language: Haskell2010
 
 executable productsAPI-exe
@@ -43,9 +48,12 @@ executable productsAPI-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson ==2.1.0.0
+    , base >=4.7 && <5
+    , postgresql-simple ==0.6.4
     , productsAPI
     , scotty ==0.12
+    , text ==1.2.4.1
   default-language: Haskell2010
 
 test-suite productsAPI-test
@@ -57,7 +65,10 @@ test-suite productsAPI-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson ==2.1.0.0
+    , base >=4.7 && <5
+    , postgresql-simple ==0.6.4
     , productsAPI
     , scotty ==0.12
+    , text ==1.2.4.1
   default-language: Haskell2010

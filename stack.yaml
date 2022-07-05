@@ -6,6 +6,8 @@ packages:
 
 extra-deps:
 - scotty-0.12
+- postgresql-simple-0.6.4
+- text-1.2.4.1
 - aeson-2.1.0.0@sha256:18a5e5f6f4224d04565e97cec140affb1728c488bf07ef497430ef7d95cd05ff,5959
 - base-compat-batteries-0.12.1@sha256:ee819d7570b2fda1012d29db945a1778c388ef8c0c282e45c8fe4eae7616a25c,8891
 - blaze-builder-0.4.2.2@sha256:f0017df374c330de0ebe0eb15eae8c48427bddefa1d81a3cb31c0a4812ecdb08,3685
@@ -101,3 +103,6 @@ extra-deps:
 - old-time-1.1.0.3@sha256:c91fbb3ee73d20ccd015842b30f1f29a304893ebe0ae3128b7bbc13d5bb0d4c8,1328
 - StateVar-1.2.2@sha256:3c022c00485fe165e3080d5da6b3ca9c9b02f62c5deebc584d1b3d1309ce673e,1673
 - old-locale-1.0.0.7@sha256:fa998be2c7e00cd26a6e9075bea790caaf3932caa3e9497ad69bc20380dd6911,1071
+- Only-0.1@sha256:f92f5da97e647451f1ee7f5bf44914fb75062d08ccd3f36b2000d649c63d13aa,1373
+- bytestring-builder-0.10.8.2.0@sha256:6b2b812cdac53f5a2c82376a416dde04adbb5ca3e1604c0d075368a0498f762b,3781
+- postgresql-libpq-0.9.4.3@sha256:d64bee309b4f7fe5eb3b78c238c5144720cad903e31432fc868b58b98ba49fd8,2817
