@@ -5,16 +5,17 @@ module Lib
     getProducts,
     createProduct,
     updateProduct,
-    addProduct,
   )
 where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
+import Data.Aeson.Types (Parser)
 import Data.Int
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromRow
-import Web.Scotty (ActionM, param, post, status, text)
+import Network.HTTP.Types.Status (status200, status201, status204, status400)
+import Web.Scotty (ActionM, jsonData, param, post, status, text)
 import qualified Web.Scotty as S
 
 data Product = Product
@@ -37,6 +38,14 @@ instance ToJSON Product where
         "description" .= description
       ]
 
+instance FromJSON Product where
+  parseJSON (Object o) =
+    Product <$> o .:? "id" .!= 0
+      <*> o .: "name"
+      <*> o .: "price"
+      <*> o .: "description"
+  parseJSON _ = fail "Expected an object for Product"
+
 getProducts :: Connection -> ActionM ()
 getProducts conn = do
   products <- (liftIO $ query_ conn "SELECT * FROM products") :: ActionM [Product]
@@ -49,43 +58,39 @@ getProduct conn = do
   product <- liftIO result :: ActionM [Product]
   S.json (head product)
 
-addProduct :: Connection -> ActionM ()
-addProduct conn = do
-  _nameProduct <- param "name" :: ActionM String
-
-  hasProductResult <- liftIO $ hasProduct conn _nameProduct
-  if hasProductResult
-    then updateProduct conn
-    else createProduct conn
-
-hasProduct :: Connection -> String -> IO Bool
-hasProduct conn _nameProduct = do
-  n <- execute conn "SELECT * FROM products WHERE name = ?" (Only _nameProduct)
-  return $ n > 0
-
 createProduct :: Connection -> ActionM ()
 createProduct conn = do
-  _name <- param "name" :: ActionM String
-  _price <- param "price" :: ActionM Int
-  _description <- param "description" :: ActionM String
+  (Product _ _name _price _description) <- jsonData
   let result =
         execute
           conn
           "INSERT INTO products (name, price, description) VALUES (?, ?, ?)"
           (_name, _price, _description)
-  liftIO result
-
+  n <- liftIO result
+  status $ if n > 0 then status201 else status400
   S.json $ object ["message" .= ("Product created successfully!" :: String)]
 
 updateProduct :: Connection -> ActionM ()
 updateProduct conn = do
-  _name <- param "name" :: ActionM String
-  _price <- param "price" :: ActionM Int
-  _description <- param "description" :: ActionM String
-  let result =
-        execute
-          conn
-          "UPDATE products SET name = ?, price = ?, description = ? WHERE name = ?"
-          (_name, _price, _description, _name)
-  liftIO result
-  S.json $ object ["message" .= ("Product updated" :: String)]
+  _idProduct <- param "id" :: ActionM Int
+
+  (Product _ _name _price _description) <- jsonData :: ActionM Product
+
+  productExist <- liftIO $ haveProduct conn _idProduct
+
+  if not productExist
+    then createProduct conn
+    else do
+      let result =
+            execute
+              conn
+              "UPDATE products SET name = ?, price = ?, description = ? WHERE id = ?"
+              (_name, _price, _description, _idProduct)
+      n <- liftIO result
+      status $ if n > 0 then status200 else status204
+      S.json $ object ["message" .= ("Product updated" :: String)]
+
+haveProduct :: Connection -> Int -> IO Bool
+haveProduct conn _idProduct = do
+  [Only n] <- query conn "SELECT COUNT(*) FROM products WHERE id = ?" (Only _idProduct) :: IO [Only Int]
+  return $ n > 0
