@@ -15,7 +15,7 @@ This is an example of API REST built with [Scotty]() a web framework of Haskell 
 
 ## Quick run instructions
 
-> Before to start, you need have installed [stack]() and [docker-compose]() installed.
+> Before to start, you need to have [stack]() and [docker-compose]() installed.
 
 For running the API, you need to run the database using docker-compose, first is necessary to build the images and later create and start the containers with next commands:
 
@@ -35,7 +35,7 @@ $ stack run
 
 ## Running PostgreSQL
 
-The tutorial tries to be as simple to understand as possible, but if you know how to use docker-compose and use a PostgreSQL database, you can skip this section.
+This tutorial tries to be as simple to understand as possible, but if you know how to use docker-compose and use a PostgreSQL database, you can skip this section.
 
 The first step is make a [`docker-compose.yml`](docker-compose.yml) file.
 
@@ -93,7 +93,7 @@ INSERT INTO products (name, price, description) VALUES
 
 ```
 
-The queries create the table products and insert some products.
+This queries create the table products and insert some products.
 
 In this way the database is available in the port 5432 and the data is stored into [db](db).
 
@@ -103,6 +103,7 @@ The first part of the API is a JSON API, with the following endpoints:
 
 | **Method** |               **Route**               |       **Description**       |
 | :--------: | :-----------------------------------: | :-------------------------: |
+|    Get     |  http://localhost:8080/api/product/   |    Retrieve all products    |
 |    Get     | http://localhost:8080/api/product/:id | Retrieve a specific product |
 |    Post    |  http://localhost:8080/api/product/   |        Add a product        |
 |    Put     | http://localhost:8080/api/product/:id |      Update a product       |
@@ -130,11 +131,11 @@ main = do
   {- continue -}
 ```
 
-Later, for the routes I create a function with the routes:
+Then, for the routes, you can create a function with the routes to separate these processes.
 
 ```haskell
 import Lib
-import Web.Scotty (get, html, param, post, put, scotty)
+import Web.Scotty (delete, get, post, put, scotty)
 
 routes :: Connection -> IO ()
 routes conn = scotty 8080 $ do
@@ -176,15 +177,15 @@ getProducts conn = do
   S.json $ object ["products" .= products]
 ```
 
-| line 0 | This function receives a connection to the database and returns an empty `ActionM`, this is very similar to a `IO` monad, but in simple words, it provides a response to the client. |
-| :----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| line 6 | This function receives a connection to the database and returns an empty `ActionM`, this is very similar to a `IO` monad, but in simple words, it provides a response to the client. |
+| :----: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 > This is the way that Haskell control the [**side effects**]() for maintain the [**referential transparency**]() since Haskell is a [**pure functional language**]().
 
-| line 1 | Save connection into `conn` |
-| :----: | :--------------------------- |
+| line 7 | Save connection into `conn`. |
+| :----: | :-------------------------- |
 
-| line 2 | This executes the query to get all the saved products. <br/>The `query_` function is very similar to `query` the difference is that this one does not receive values to replace in the query. <br/>Also, the result of this query is interpreting as an `IO [Product]` type and `liftIO` is a function that take a `IO a` and transform to `m a` value, where `m` is another Monad. That is, it transforms `IO [Product]` result of `query_` into `ActionM [Product]`, that is why the `::` operator is using here, to give information to Haskell about final type. |
-| :----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| line 8 | This executes the query to get all the saved products. <br/>The `query_` function is very similar to `query` the difference is that this one does not receive values to replace in the query. <br/>Also, the result of this query is interpreting as an `IO [Product]` type and `liftIO` is a function that take a `IO a` and transform to `m a` value, where `m` is another Monad. That is, it transforms `IO [Product]` result of `query_` into `ActionM [Product]`, that is why the `::` operator is using here, to give information to Haskell about final type. |
+| :----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 ## HTML API
