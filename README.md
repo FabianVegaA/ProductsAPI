@@ -183,9 +183,39 @@ getProducts conn = do
 > This is the way that Haskell control the [**side effects**]() for maintain the [**referential transparency**]() since Haskell is a [**pure functional language**]().
 
 | line 7 | Save connection into `conn`. |
-| :----: | :-------------------------- |
+| :----: | :--------------------------- |
 
 | line 8 | This executes the query to get all the saved products. <br/>The `query_` function is very similar to `query` the difference is that this one does not receive values to replace in the query. <br/>Also, the result of this query is interpreting as an `IO [Product]` type and `liftIO` is a function that take a `IO a` and transform to `m a` value, where `m` is another Monad. That is, it transforms `IO [Product]` result of `query_` into `ActionM [Product]`, that is why the `::` operator is using here, to give information to Haskell about final type. |
 | :----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+
+| line 9 | This return a `json` with an **object** that into have `"products"` with a list of products. |
+| :----: | :------------------------------------------------------------------------------------------- |
+
+Thus, if you make a consult to the route `http://localhost:8080/api/product/` you get something like this:
+
+```json
+{
+  "products": [
+    {
+      "description": "Description 1",
+      "id": 1,
+      "name": "Product 1",
+      "price": 10
+    },
+    {
+      "description": "Description 2",
+      "id": 2,
+      "name": "Product 2",
+      "price": 20
+    },
+    {
+      "description": "Description 3",
+      "id": 3,
+      "name": "Product 3",
+      "price": 30
+    }
+  ]
+}
+```
 
 ## HTML API
