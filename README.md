@@ -9,7 +9,7 @@ This is an example of API REST built with [Scotty]() a web framework of Haskell 
   - [Quick run instructions](#quick-run-instructions)
   - [Running PostgreSQL](#running-postgresql)
   - [JSON API](#json-api)
-  - [Declaring the routes of the API](#declaring-the-routes-of-the-api)
+    - [Declaring the routes of the API](#declaring-the-routes-of-the-api)
     - [Get products](#get-products)
   - [HTML API](#html-api)
 
@@ -108,7 +108,7 @@ The first part of the API is a JSON API, with the following endpoints:
 |    Put     | http://localhost:8080/api/product/:id |      Update a product       |
 |   Delete   | http://localhost:8080/api/product/:id |      Delete a product       |
 
-## Declaring the routes of the API
+### Declaring the routes of the API
 
 The routes are declaring in the file [`Main.hs`](Main.hs), but before, as it is common in Haskell, it is necessary to build a `main` function where the application is executing. Here where the connection to the database is also creating:
 
