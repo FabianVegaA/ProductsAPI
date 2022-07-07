@@ -191,7 +191,7 @@ getProducts conn = do
 | line 9 | This return a `json` with an **object** that into have `"products"` with a list of products. |
 | :----: | :------------------------------------------------------------------------------------------- |
 
-Thus, if you make a consult to the route `http://localhost:8080/api/product/` you get something like this:
+So, if you query the route `http://localhost:8080/api/product/` you get something like this:
 
 ```json
 {
