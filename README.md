@@ -11,6 +11,7 @@ This is an example of API REST built with [Scotty]() a web framework of Haskell 
   - [JSON API](#json-api)
     - [Declaring the routes of the API](#declaring-the-routes-of-the-api)
     - [Get products](#get-products)
+    - [Get one product](#get-one-product)
   - [HTML API](#html-api)
 
 ## Quick run instructions
@@ -166,7 +167,6 @@ The function `getProducts` is a function that returns a list of products.
 
 ```haskell
 import Control.Monad.IO.Class (liftIO)
-import Data.Aeson
 import Database.PostgreSQL.Simple
 import Web.Scotty (ActionM)
 import qualified Web.Scotty as S
@@ -217,5 +217,35 @@ So, if you query the route `http://localhost:8080/api/product/` you get somethin
   ]
 }
 ```
+
+### Get one product
+
+The function `getProduct` is a function that retrieve a id product and returns a product.
+
+```haskell
+getProduct :: Connection -> ActionM ()
+getProduct conn = do
+  _idProduct <- param "id" :: ActionM Int
+  let result = query conn "SELECT * FROM products WHERE id = ?" (Only _idProduct)
+  product <- liftIO result :: ActionM [Product]
+  case product of
+    [] -> do
+      status status400
+      S.json $ object ["error" .= ("Product not found" :: String)]
+    _ -> do
+      status status200
+      S.json (head product)
+```
+
+| line 2 | This function is similar to the `getProducts` function, but it receives the identifier of some product, for this the `param` function is using, and the result is setting as an `ActionM Int` type. |
+| :----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+
+| line 3 | Here we use the `query` function, it can format any query using values wrapped with `Only`. Thus, we get a custom query by adding `'?'` where a field should be added. |
+| :----: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+
+| line 5 - line 11 | Depending on the result of the query, it is possible to obtain an empty list or a list with at least one value, and the best way to declare this is with [pattern matching](). If the list is empty the result is a status code 400 and a message of error, else if the list have at least one value return a status code 200 and the first value of the list. |
+| :--------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+
+
 
 ## HTML API
