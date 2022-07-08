@@ -5,6 +5,7 @@ module Lib
     getProducts,
     createProduct,
     updateProduct,
+    deleteProduct,
   )
 where
 
@@ -14,7 +15,7 @@ import Data.Aeson.Types (Parser)
 import Data.Int
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromRow
-import Network.HTTP.Types.Status (status200, status201, status204, status400)
+import Network.HTTP.Types.Status (Status, status200, status201, status204, status400)
 import Web.Scotty (ActionM, jsonData, param, post, status, text)
 import qualified Web.Scotty as S
 
@@ -49,14 +50,21 @@ instance FromJSON Product where
 getProducts :: Connection -> ActionM ()
 getProducts conn = do
   products <- (liftIO $ query_ conn "SELECT * FROM products") :: ActionM [Product]
+  status status200
   S.json $ object ["products" .= products]
-
+ 
 getProduct :: Connection -> ActionM ()
 getProduct conn = do
   _idProduct <- param "id" :: ActionM Int
   let result = query conn "SELECT * FROM products WHERE id = ?" (Only _idProduct)
   product <- liftIO result :: ActionM [Product]
-  S.json (head product)
+  case product of
+    [] -> do
+      status status400
+      S.json $ object ["error" .= ("Product not found" :: String)]
+    _ -> do
+      status status200
+      S.json (head product)
 
 createProduct :: Connection -> ActionM ()
 createProduct conn = do
@@ -89,6 +97,14 @@ updateProduct conn = do
       n <- liftIO result
       status $ if n > 0 then status200 else status204
       S.json $ object ["message" .= ("Product updated" :: String)]
+
+deleteProduct :: Connection -> ActionM ()
+deleteProduct conn = do
+  _idProduct <- param "id" :: ActionM Int
+  let result = execute conn "DELETE FROM products WHERE id = ?" (Only _idProduct)
+  n <- liftIO result
+  status $ if n > 0 then status200 else status400
+  S.json $ object ["message" .= ("Product deleted" :: String)]
 
 haveProduct :: Connection -> Int -> IO Bool
 haveProduct conn _idProduct = do
