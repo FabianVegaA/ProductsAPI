@@ -5,7 +5,7 @@ module Main where
 import Data.Monoid (mconcat)
 import Database.PostgreSQL.Simple
 import Lib
-import Web.Scotty (get, html, param, post, put, scotty)
+import Web.Scotty (delete, get, html, param, post, put, scotty)
 
 localPG :: ConnectInfo
 localPG =
@@ -38,3 +38,5 @@ routes conn = scotty 8080 $ do
   post "/api/product/" $ createProduct conn
 
   put "/api/product/:id" $ updateProduct conn
+
+  delete "/api/product/:id" $ deleteProduct conn
