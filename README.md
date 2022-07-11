@@ -11,12 +11,12 @@ This is an example of API REST built with [Scotty](https://hackage.haskell.org/p
   - [JSON API](#json-api)
     - [Declaring the routes of the API](#declaring-the-routes-of-the-api)
     - [The data type product](#the-data-type-product)
-      - [**Resume of how to use the Functors and Applicatives**](#resume-of-how-to-use-the-functors-and-applicatives)
+      - [Resume about how to use the Functors and Applicatives](#resume-about-how-to-use-the-functors-and-applicatives)
     - [Get products](#get-products)
     - [Get one product](#get-one-product)
     - [Add a product](#add-a-product)
-    - [Update a product](#update-a-product)
-    - [Delete a product](#delete-a-product)
+    - [Update and Delete a product](#update-and-delete-a-product)
+      - [Check if the product exists](#check-if-the-product-exists)
 
 ## Quick run instructions
 
@@ -178,11 +178,13 @@ data Product = Product
   }
 ```
 
-This allows to receive the data from the database and manage it in a better way, but defining only the data type is not enough for Haskell to parse the data from the database to the `Product` type. To do this, we need to **instance** from the `FromRow` class the functions and define how the data is translated to the type we define.
+This allows to receive the data from the database and manage it in a better way, but defining only the data type is not enough for Haskell to parse the data from the database to the `Product` type. To do this, we need to **instance** from the `FromRow` type class the functions and define how the data is translated to the type we define.
 
 > Yes, Haskell also has a class, but it is not a class as in the OOP paradigm. It can be considered as a kind of types. For more information see the following explanation from [Learn You a Haskell for Great Good!](http://learnyouahaskell.com/types-and-typeclasses#typeclasses-101).
 
 ```haskell
+import Database.PostgreSQL.Simple.FromRow
+
 instance FromRow Product where
   fromRow = Product <$> field <*> field <*> field <*> field
 ```
@@ -192,6 +194,8 @@ instance FromRow Product where
 Now it only remains to do the same to be able to serialize the type `Product` to a JSON and vice versa. That is possible instancing from the type class FromJSON and ToJSON, in this way:
 
 ```haskell
+import Data.Aeson
+
 instance FromJSON Product where
   parseJSON (Object o) =
     Product <$> o .:? "id" .!= 0
@@ -203,16 +207,22 @@ instance FromJSON Product where
 
 This mean that now we have defined the function `parseJSON`, this receives a JSON and when this JSON is an object, it will look for the fields `id`, `name`, `price` and `description`. For that, we use the `.:` and `.:?` operators, which means get field and maybe get field, correspondingly. And the operator `.!=` is used to set the default value for the field if it is not found when we use `.:?`.
 
-#### **Resume of how to use the Functors and Applicatives**
+---
+
+#### Resume about how to use the Functors and Applicatives
 
 > Haskell take advantage of the property of the Functors and Applicatives type classes.
 > <br/><br/>The Functor class has a function called `fmap` that allows to map a function over a functor, also can be used with the operator `<$>`.
 > <br/><br/>The Applicatives is a subclass of the Functor class, and has a function called `<*>` that allows to apply a function wraped into a functor to a other functor.
 > <br/><br/>So, when we use `<$>` and `<*>` means, take the constructor of type `Product` and apply it to the result to get a field. We still need more field to have a `Product` type, so now it is a function wrapped by a functor. To apply the wrapped function, we use `<*>` and so on until we construct the `Product` type with all its fields.
 
+---
+
 And similarly to convert a `Product` type to a JSON:
 
 ```haskell
+import Data.Aeson
+
 instance ToJSON Product where
   toJSON (Product idProduct name price description) =
     object
@@ -290,6 +300,11 @@ So, if you query the route `http://localhost:8080/api/product/` you get somethin
 The function `getProduct` is a function that retrieve a id product and response a product.
 
 ```haskell
+import Data.Aeson
+import Database.PostgreSQL.Simple
+import Network.HTTP.Types.Status (status200, status400)
+import Web.Scotty (ActionM, param, status)
+
 getProduct :: Connection -> ActionM ()
 getProduct conn = do
   _idProduct <- param "id" :: ActionM Int
@@ -315,9 +330,15 @@ getProduct conn = do
 
 ### Add a product
 
-The function `createProduct` is very similar to the previous functions.
+The function `createProduct` is very similar to the previous functions. A different thing is that here is used the `execute` function and not `query`, which is used to execute a query and return the number of rows affected. This result is used to determine if the product was created or not. Other different is that now we use the `jsonData` function to get the JSON data from the request, for this work we created the `intances` of the `FromJSON` typeclass.
 
 ```haskell
+import Data.Aeson
+import Database.PostgreSQL.Simple
+import Network.HTTP.Types.Status (status201, status400)
+import Web.Scotty (ActionM, param, status)
+
+
 createProduct :: Connection -> ActionM ()
 createProduct conn = do
   (Product _ _name _price _description) <- jsonData
@@ -327,10 +348,72 @@ createProduct conn = do
           "INSERT INTO products (name, price, description) VALUES (?, ?, ?)"
           (_name, _price, _description)
   n <- liftIO result
-  status $ if n > 0 then status201 else status400
-  S.json $ object ["message" .= ("Product created successfully!" :: String)]
+  if n > 0
+    then do
+      status status201
+      S.json $ object ["message" .= ("Product created" :: String)]
+    else do
+      status status400
+      S.json $ object ["error" .= ("Product not created" :: String)]
 ```
 
-### Update a product
+### Update and Delete a product
 
-### Delete a product
+And so on, the function `updateProduct` and `deleteProduct` are similar to the previous functions, but for do more easy to know if the product exists or not, we going to create the function [`hasProduct`](#check-if-the-product-exists) to check if the product exists.
+
+```haskell
+import Data.Aeson
+import Database.PostgreSQL.Simple
+import Network.HTTP.Types.Status (status200, status204)
+import Web.Scotty (ActionM, jsonData, param, status)
+
+updateProduct :: Connection -> ActionM ()
+updateProduct conn = do
+  _idProduct <- param "id" :: ActionM Int
+
+  (Product _ _name _price _description) <- jsonData :: ActionM Product
+
+  productExist <- liftIO $ haveProduct conn _idProduct
+
+  if not productExist
+    then createProduct conn
+    else do
+      let result =
+            execute
+              conn
+              "UPDATE products SET name = ?, price = ?, description = ? WHERE id = ?"
+              (_name, _price, _description, _idProduct)
+      n <- liftIO result
+      status $ if n > 0 then status200 else status204
+      S.json $ object ["message" .= ("Product updated" :: String)]
+```
+
+```haskell
+deleteProduct :: Connection -> ActionM ()
+deleteProduct conn = do
+  _idProduct <- param "id" :: ActionM Int
+
+  productExist <- liftIO $ haveProduct conn _idProduct
+
+  if not productExist
+    then do
+      status status400
+      S.json $ object ["error" .= ("Product not found" :: String)]
+    else do
+      status status200
+      liftIO $ execute conn "DELETE FROM products WHERE id = ?" (Only _idProduct)
+      S.json $ object ["message" .= ("Product deleted" :: String)]
+
+```
+
+#### Check if the product exists
+
+```haskell
+import Database.PostgreSQL.Simple
+
+haveProduct :: Connection -> Int -> IO Bool
+haveProduct conn _idProduct = do
+  [Only n] <- query conn "SELECT COUNT(*) FROM products WHERE id = ?" (Only _idProduct) :: IO [Only Int]
+  return $ n > 0
+
+```
