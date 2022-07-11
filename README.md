@@ -10,9 +10,13 @@ This is an example of API REST built with [Scotty]() a web framework of Haskell 
   - [Running PostgreSQL](#running-postgresql)
   - [JSON API](#json-api)
     - [Declaring the routes of the API](#declaring-the-routes-of-the-api)
+    - [The data type product](#the-data-type-product)
+      - [**Resume of how to use the Functors and Applicatives**](#resume-of-how-to-use-the-functors-and-applicatives)
     - [Get products](#get-products)
     - [Get one product](#get-one-product)
-  - [HTML API](#html-api)
+    - [Add a product](#add-a-product)
+    - [Update a product](#update-a-product)
+    - [Delete a product](#delete-a-product)
 
 ## Quick run instructions
 
@@ -161,9 +165,72 @@ main = do
   routes conn
 ```
 
+### The data type product
+
+Before creating the functions to get the products and use it, you must create the data type to product.
+
+```haskell
+data Product = Product
+  { idProduct :: Int,
+    name :: String,
+    price :: Int,
+    description :: String
+  }
+```
+
+This allows to receive the data from the database and manage it in a better way, but defining only the data type is not enough for Haskell to parse the data from the database to the `Product` type. To do this, we need to **instance** from the `FromRow` class the functions and define how the data is translated to the type we define.
+
+> Yes, Haskell also has a class, but it is not a class as in the OOP paradigm. It can be considered as a kind of types. For more information see the following explanation from [Learn You a Haskell for Great Good!](http://learnyouahaskell.com/types-and-typeclasses#typeclasses-101).
+
+```haskell
+instance FromRow Product where
+  fromRow = Product <$> field <*> field <*> field <*> field
+```
+
+> The operators `<*>` and `<$>` are explained in [here](#resume-of-how-to-use-the-functors-and-applicatives)
+
+Now it only remains to do the same to be able to serialize the type `Product` to a JSON and vice versa. That is possible instancing from the type class FromJSON and ToJSON, in this way:
+
+```haskell
+instance FromJSON Product where
+  parseJSON (Object o) =
+    Product <$> o .:? "id" .!= 0
+      <*> o .: "name"
+      <*> o .: "price"
+      <*> o .: "description"
+  parseJSON _ = fail "Expected an object for Product"
+```
+
+This mean that now we have defined the function `parseJSON`, this receives a JSON and when this JSON is an object, it will look for the fields `id`, `name`, `price` and `description`. For that, we use the `.:` and `.:?` operators, which means get field and maybe get field, correspondingly. And the operator `.!=` is used to set the default value for the field if it is not found when we use `.:?`.
+
+#### **Resume of how to use the Functors and Applicatives**
+
+> Haskell take advantage of the property of the Functors and Applicatives type classes.
+> <br/><br/>The Functor class has a function called `fmap` that allows to map a function over a functor, also can be used with the operator `<$>`.
+> <br/><br/>The Applicatives is a subclass of the Functor class, and has a function called `<*>` that allows to apply a function wraped into a functor to a other functor.
+> <br/><br/>So, when we use `<$>` and `<*>` means, take the constructor of type `Product` and apply it to the result to get a field. We still need more field to have a `Product` type, so now it is a function wrapped by a functor. To apply the wrapped function, we use `<*>` and so on until we construct the `Product` type with all its fields.
+
+And similarly to convert a `Product` type to a JSON:
+
+```haskell
+instance ToJSON Product where
+  toJSON (Product idProduct name price description) =
+    object
+      [ "id" .= idProduct,
+        "name" .= name,
+        "price" .= price,
+        "description" .= description
+      ]
+```
+
+> The `object` function is used to create a JSON object, and the `.=` assigns a value to a field in the object.
+
 ### Get products
 
-The function `getProducts` is a function that returns a list of products.
+The function `getProducts` is a function that response a list of products.
+
+> Why have I said that the function **response** a list of products and not **return** a list of products?
+> That's because the function truly return a `ActionM ()`, this is similar to `IO` monad and it is way to produce side effects.
 
 ```haskell
 import Control.Monad.IO.Class (liftIO)
@@ -220,7 +287,7 @@ So, if you query the route `http://localhost:8080/api/product/` you get somethin
 
 ### Get one product
 
-The function `getProduct` is a function that retrieve a id product and returns a product.
+The function `getProduct` is a function that retrieve a id product and response a product.
 
 ```haskell
 getProduct :: Connection -> ActionM ()
@@ -246,6 +313,24 @@ getProduct conn = do
 | line 5 - line 11 | Depending on the result of the query, it is possible to obtain an empty list or a list with at least one value, and the best way to declare this is with [pattern matching](). If the list is empty the result is a status code 400 and a message of error, else if the list have at least one value return a status code 200 and the first value of the list. |
 | :--------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
+### Add a product
 
+The function `createProduct` is very similar to the previous functions.
 
-## HTML API
+```haskell
+createProduct :: Connection -> ActionM ()
+createProduct conn = do
+  (Product _ _name _price _description) <- jsonData
+  let result =
+        execute
+          conn
+          "INSERT INTO products (name, price, description) VALUES (?, ?, ?)"
+          (_name, _price, _description)
+  n <- liftIO result
+  status $ if n > 0 then status201 else status400
+  S.json $ object ["message" .= ("Product created successfully!" :: String)]
+```
+
+### Update a product
+
+### Delete a product
