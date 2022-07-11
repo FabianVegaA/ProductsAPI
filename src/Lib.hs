@@ -11,7 +11,6 @@ where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
-import Data.Aeson.Types (Parser)
 import Data.Int
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromRow
@@ -25,7 +24,6 @@ data Product = Product
     price :: Int,
     description :: String
   }
-  deriving (Show)
 
 instance FromRow Product where
   fromRow = Product <$> field <*> field <*> field <*> field
@@ -52,7 +50,7 @@ getProducts conn = do
   products <- (liftIO $ query_ conn "SELECT * FROM products") :: ActionM [Product]
   status status200
   S.json $ object ["products" .= products]
- 
+
 getProduct :: Connection -> ActionM ()
 getProduct conn = do
   _idProduct <- param "id" :: ActionM Int
@@ -75,8 +73,13 @@ createProduct conn = do
           "INSERT INTO products (name, price, description) VALUES (?, ?, ?)"
           (_name, _price, _description)
   n <- liftIO result
-  status $ if n > 0 then status201 else status400
-  S.json $ object ["message" .= ("Product created successfully!" :: String)]
+  if n > 0
+    then do
+      status status201
+      S.json $ object ["message" .= ("Product created" :: String)]
+    else do
+      status status400
+      S.json $ object ["error" .= ("Product not created" :: String)]
 
 updateProduct :: Connection -> ActionM ()
 updateProduct conn = do
@@ -101,10 +104,17 @@ updateProduct conn = do
 deleteProduct :: Connection -> ActionM ()
 deleteProduct conn = do
   _idProduct <- param "id" :: ActionM Int
-  let result = execute conn "DELETE FROM products WHERE id = ?" (Only _idProduct)
-  n <- liftIO result
-  status $ if n > 0 then status200 else status400
-  S.json $ object ["message" .= ("Product deleted" :: String)]
+
+  productExist <- liftIO $ haveProduct conn _idProduct
+
+  if not productExist
+    then do
+      status status400
+      S.json $ object ["error" .= ("Product not found" :: String)]
+    else do
+      status status200
+      liftIO $ execute conn "DELETE FROM products WHERE id = ?" (Only _idProduct)
+      S.json $ object ["message" .= ("Product deleted" :: String)]
 
 haveProduct :: Connection -> Int -> IO Bool
 haveProduct conn _idProduct = do
