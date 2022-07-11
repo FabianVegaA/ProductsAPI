@@ -1,6 +1,6 @@
 # Products API
 
-This is an example of API REST built with [Scotty](https://hackage.haskell.org/package/scotty) a web framework of Haskell and [PostgreSQL](https://www.postgresql.org) a relational database. It's a simple API to manage products.
+This is an example of REST API built with [Scotty](https://hackage.haskell.org/package/scotty) a web framework of Haskell and [PostgreSQL](https://www.postgresql.org) a relational database. It's a simple API to manage products.
 
 ## Index
 
@@ -8,7 +8,7 @@ This is an example of API REST built with [Scotty](https://hackage.haskell.org/p
   - [Index](#index)
   - [Quick run instructions](#quick-run-instructions)
   - [Running PostgreSQL](#running-postgresql)
-  - [JSON API](#json-api)
+  - [JSON REST API](#json-rest-api)
     - [Declaring the routes of the API](#declaring-the-routes-of-the-api)
     - [The data type product](#the-data-type-product)
       - [Resume about how to use the Functors and Applicatives](#resume-about-how-to-use-the-functors-and-applicatives)
@@ -17,6 +17,7 @@ This is an example of API REST built with [Scotty](https://hackage.haskell.org/p
     - [Add a product](#add-a-product)
     - [Update and Delete a product](#update-and-delete-a-product)
       - [Check if the product exists](#check-if-the-product-exists)
+  - [What is next?](#what-is-next)
 
 ## Quick run instructions
 
@@ -100,11 +101,11 @@ INSERT INTO products (name, price, description) VALUES
 
 This queries create the table products and insert some products.
 
-In this way the database is available in the port 5432 and the data is stored into [db](db).
+In this way the database is available in the port **5432** and the data is stored into [db](db).
 
-## JSON API
+## JSON REST API
 
-The first part of the API is a JSON API, with the following endpoints:
+The first part of the API is a JSON REST API, with the following endpoints:
 
 | **Method** |               **Route**               |       **Description**       |
 | :--------: | :-----------------------------------: | :-------------------------: |
@@ -417,3 +418,9 @@ haveProduct conn _idProduct = do
   return $ n > 0
 
 ```
+
+## What is next?
+
+This tutorial try to explain how you can create a REST API using Haskell and use a database to store the data. This is a first part of the tutorial, and the next step is to manage HTML pages, for that we continue using [Scotty](https://hackage.haskell.org/package/scotty) and added the library [Blaze](https://hackage.haskell.org/package/blaze-html).
+
+The project can be found [here](https://github.com/FabianVegaA/ProductsAPI) and if you have any question, please contact me on [Twitter](https://twitter.com/fabianmativeal) or put a comment here.
