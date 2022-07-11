@@ -1,6 +1,6 @@
 # Products API
 
-This is an example of API REST built with [Scotty]() a web framework of Haskell and [PostgreSQL]() a relational database. It's a simple API to manage products.
+This is an example of API REST built with [Scotty](https://hackage.haskell.org/package/scotty) a web framework of Haskell and [PostgreSQL](https://www.postgresql.org) a relational database. It's a simple API to manage products.
 
 ## Index
 
@@ -20,7 +20,7 @@ This is an example of API REST built with [Scotty]() a web framework of Haskell 
 
 ## Quick run instructions
 
-> Before to start, you need to have [stack]() and [docker-compose]() installed.
+> Before to start, you need to have [stack](https://docs.haskellstack.org/en/stable/README/) and [docker-compose](https://docs.docker.com/compose/) installed.
 
 For running the API, you need to run the database using docker-compose, first is necessary to build the images and later create and start the containers with next commands:
 
@@ -247,7 +247,7 @@ getProducts conn = do
 | line 6 | This function receives a connection to the database and returns an empty `ActionM`, this is very similar to a `IO` monad, but in simple words, it provides a response to the client. |
 | :----: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
-> This is the way that Haskell control the [**side effects**]() for maintain the [**referential transparency**]() since Haskell is a [**pure functional language**]().
+> This is the way that Haskell control the [**side effects**](<https://en.wikipedia.org/wiki/Side_effect_(computer_science)>) for maintain the [**referential transparency**](https://en.wikipedia.org/wiki/Referential_transparency) since Haskell is a [**pure functional language**](https://wiki.haskell.org/Pure).
 
 | line 7 | Save connection into `conn`. |
 | :----: | :--------------------------- |
@@ -310,8 +310,8 @@ getProduct conn = do
 | line 3 | Here we use the `query` function, it can format any query using values wrapped with `Only`. Thus, we get a custom query by adding `'?'` where a field should be added. |
 | :----: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
-| line 5 - line 11 | Depending on the result of the query, it is possible to obtain an empty list or a list with at least one value, and the best way to declare this is with [pattern matching](). If the list is empty the result is a status code 400 and a message of error, else if the list have at least one value return a status code 200 and the first value of the list. |
-| :--------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| line 5 - line 11 | Depending on the result of the query, it is possible to obtain an empty list or a list with at least one value, and the best way to declare this is with [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching). If the list is empty the result is a status code 400 and a message of error, else if the list have at least one value return a status code 200 and the first value of the list. |
+| :--------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 ### Add a product
 
